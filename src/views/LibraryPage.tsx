@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Layout from '@/components/Layout'
 import ProgressBar from '@/components/ProgressBar'
+import AnimateIn from '@/components/motion/AnimateIn'
+import Stagger from '@/components/motion/Stagger'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCatalog } from '@/contexts/CatalogContext'
@@ -53,7 +55,7 @@ export default function LibraryPage() {
       <div className="max-w-[1280px] mx-auto px-4 md:px-6 mt-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <AnimateIn className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-[#F5F7FA] text-2xl font-extrabold tracking-tight">Миний сан</h1>
             <p className="text-[#4B5563] text-sm mt-0.5">{readingList.length + savedList.length + completedList.length} манга</p>
@@ -61,7 +63,7 @@ export default function LibraryPage() {
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white overflow-hidden" style={{ background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)' }}>
             {profile?.avatar ? <img src={profile.avatar} alt="" className="w-full h-full object-cover" /> : (profile?.name?.[0] || 'М')}
           </div>
-        </div>
+        </AnimateIn>
 
         {/* Guest banner */}
         {isGuest && (
@@ -141,6 +143,7 @@ export default function LibraryPage() {
           </div>
         ) : (
           <div className="space-y-2.5" onClick={() => setContextMenu(null)}>
+          <Stagger key={tab} className="space-y-2.5" y={10}>
             {currentList.map((manga) => {
               const pct = manga.readProgress
                 ? Math.round((manga.readProgress.chapter / manga.chapterCount) * 100)
@@ -272,6 +275,7 @@ export default function LibraryPage() {
                 </div>
               )
             })}
+          </Stagger>
           </div>
         )}
       </div>

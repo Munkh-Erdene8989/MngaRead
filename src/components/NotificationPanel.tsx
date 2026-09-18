@@ -1,6 +1,9 @@
 'use client'
 
+import { useLayoutEffect, useRef } from 'react'
+import { animate, cleanInlineStyles, createScope, stagger } from 'animejs'
 import type { Notification } from '@/data/store'
+import { MOTION, REDUCE_MQ } from '@/lib/motion'
 import { useNavigate } from '@/lib/nav'
 
 interface NotificationPanelProps {
@@ -36,7 +39,37 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
 
 export default function NotificationPanel({ notifications, onClose, onMarkRead, onMarkAllRead }: NotificationPanelProps) {
   const navigate = useNavigate()
+  const panelRef = useRef<HTMLDivElement>(null)
   const unreadCount = notifications.filter((n) => !n.read).length
+
+  useLayoutEffect(() => {
+    if (!panelRef.current) return
+    const scope = createScope({
+      root: panelRef,
+      mediaQueries: { reduceMotion: REDUCE_MQ },
+    }).add((self) => {
+      if (!self || self.matches.reduceMotion || !panelRef.current) return
+      animate(panelRef.current, {
+        opacity: [0, 1],
+        y: [-10, 0],
+        scale: [0.97, 1],
+        duration: MOTION.duration.base,
+        ease: MOTION.ease.enter,
+      })
+      const items = panelRef.current.querySelectorAll('.notif-item')
+      if (items.length) {
+        animate(items, {
+          opacity: [0, 1],
+          x: [10, 0],
+          delay: stagger(MOTION.staggerMs.base, { start: 80 }),
+          duration: MOTION.duration.base,
+          ease: MOTION.ease.out,
+          onComplete: (ins) => cleanInlineStyles(ins),
+        })
+      }
+    })
+    return () => scope.revert()
+  }, [])
 
   const handleItemClick = (n: Notification) => {
     onMarkRead(n.id)
@@ -53,7 +86,8 @@ export default function NotificationPanel({ notifications, onClose, onMarkRead, 
 
       {/* Panel */}
       <div
-        className="fixed top-16 right-4 md:right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border shadow-2xl overflow-hidden slide-right"
+        ref={panelRef}
+        className="fixed top-16 right-4 md:right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border shadow-2xl overflow-hidden origin-top-right"
         style={{ background: '#0E1117', borderColor: 'rgba(255,255,255,0.1)' }}
       >
         {/* Header */}
@@ -103,7 +137,7 @@ export default function NotificationPanel({ notifications, onClose, onMarkRead, 
               <button
                 key={n.id}
                 onClick={() => handleItemClick(n)}
-                className={`w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)] border-b last:border-b-0 ${!n.read ? 'bg-[rgba(139,92,246,0.04)]' : ''}`}
+                className={`notif-item w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)] border-b last:border-b-0 ${!n.read ? 'bg-[rgba(139,92,246,0.04)]' : ''}`}
                 style={{ borderColor: 'rgba(255,255,255,0.05)' }}
               >
                 {/* Icon or cover */}

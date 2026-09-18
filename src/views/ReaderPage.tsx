@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { animate, spring } from 'animejs'
 import { READER_PAGES } from '@/data/manga'
 import { isChapterAccessible } from '@/data/store'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCatalog } from '@/contexts/CatalogContext'
+import { MOTION, prefersReducedMotion } from '@/lib/motion'
 
 interface ReaderPageProps { id: string; chapter: string }
 
@@ -216,8 +218,17 @@ export default function ReaderPage({ id, chapter }: ReaderPageProps) {
         <div className="fixed inset-0 z-40" onClick={() => setSettingsOpen(false)}>
           <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.4)' }} />
           <div
-            className="absolute top-14 right-0 bottom-0 w-80 overflow-y-auto slide-right"
+            className="absolute top-14 right-0 bottom-0 w-80 overflow-y-auto"
             style={{ background: '#0E1017', borderLeft: '1px solid rgba(255,255,255,0.08)' }}
+            ref={(el) => {
+              if (!el || prefersReducedMotion() || el.dataset.animated) return
+              el.dataset.animated = '1'
+              animate(el, {
+                x: ['100%', '0%'],
+                duration: MOTION.duration.base,
+                ease: MOTION.ease.enter,
+              })
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-5 space-y-6">
@@ -363,6 +374,17 @@ export default function ReaderPage({ id, chapter }: ReaderPageProps) {
               <div
                 className="rounded-3xl border p-8 text-center"
                 style={{ background: '#151923', borderColor: 'rgba(255,255,255,0.08)' }}
+                ref={(el) => {
+                  if (!el || prefersReducedMotion() || el.dataset.animated) return
+                  el.dataset.animated = '1'
+                  animate(el, {
+                    opacity: [0, 1],
+                    y: [16, 0],
+                    scale: [0.96, 1],
+                    duration: MOTION.duration.enter,
+                    ease: spring({ bounce: 0.28, duration: 480 }),
+                  })
+                }}
               >
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(139,92,246,0.15)' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2">

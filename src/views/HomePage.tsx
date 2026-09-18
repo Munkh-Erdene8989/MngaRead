@@ -1,11 +1,16 @@
 'use client'
 
+import { useLayoutEffect, useRef } from 'react'
+import { cleanInlineStyles, createScope, createTimeline, stagger } from 'animejs'
 import Layout from '@/components/Layout'
 import MangaCard from '@/components/MangaCard'
 import GenreChip from '@/components/GenreChip'
 import ProgressBar from '@/components/ProgressBar'
+import AnimateIn from '@/components/motion/AnimateIn'
+import Stagger from '@/components/motion/Stagger'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCatalog } from '@/contexts/CatalogContext'
+import { MOTION, REDUCE_MQ } from '@/lib/motion'
 import { useNavigate } from '@/lib/nav'
 
 const GENRE_CHIPS = ['Адал явдал','Тулаан','Романтик','Фантази','Инээдэм','Нууцлаг','Амьдрал','Шинжлэх ухаан']
@@ -42,6 +47,32 @@ export default function HomePage() {
   const newChapters = [...list].slice(0, 5)
   const recommended = [...list].slice().reverse().slice(0, 5)
   const saved = featured ? isSaved(featured.id) : false
+  const heroRef = useRef<HTMLElement>(null)
+  const featuredId = featured?.id
+
+  useLayoutEffect(() => {
+    if (!heroRef.current || !featuredId) return
+    const scope = createScope({
+      root: heroRef,
+      mediaQueries: { reduceMotion: REDUCE_MQ },
+    }).add((self) => {
+      if (!self || self.matches.reduceMotion) return
+      const tl = createTimeline({ defaults: { ease: MOTION.ease.enter } })
+      tl.add('.hero-cover', { opacity: [0, 1], y: [18, 0], scale: [0.96, 1], duration: MOTION.duration.hero })
+        .add('.hero-kicker', { opacity: [0, 1], y: [8, 0], duration: MOTION.duration.base }, '-=380')
+        .add('.hero-title', { opacity: [0, 1], y: [12, 0], duration: 420 }, '-=260')
+        .add('.hero-copy', { opacity: [0, 1], y: [10, 0], duration: MOTION.duration.enter }, '-=280')
+        .add('.hero-cta', {
+          opacity: [0, 1],
+          y: [8, 0],
+          delay: stagger(55),
+          duration: MOTION.duration.base,
+          onComplete: (ins) => cleanInlineStyles(ins),
+        }, '-=220')
+    })
+    return () => scope.revert()
+  }, [featuredId])
+
   const continueReading = library
     .filter((item) => item.status === 'reading' && item.progress)
     .map((item) => {
@@ -63,7 +94,7 @@ export default function HomePage() {
       <div className="max-w-[1280px] mx-auto px-4 md:px-6">
 
         {/* ── Featured Hero ── */}
-        <section className="relative mt-4 md:mt-6 rounded-2xl overflow-hidden" style={{ minHeight: 420 }}>
+        <section ref={heroRef} className="relative mt-4 md:mt-6 rounded-2xl overflow-hidden" style={{ minHeight: 420 }}>
           {/* Blurred cover backdrop */}
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -83,7 +114,7 @@ export default function HomePage() {
 
           <div className="relative z-10 flex flex-col md:flex-row items-end gap-6 md:gap-10 p-5 md:p-10 pt-8">
             {/* Cover card */}
-            <div className="hidden md:block flex-shrink-0">
+            <div className="hero-cover hidden md:block flex-shrink-0">
               <div
                 className="w-[180px] rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.7)] border"
                 style={{ aspectRatio: '2/3', background: featured.coverColor, borderColor: 'rgba(255,255,255,0.12)' }}
@@ -95,7 +126,7 @@ export default function HomePage() {
             {/* Info */}
             <div className="flex-1 max-w-[560px]">
               {/* Eyebrow */}
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <div className="hero-kicker flex items-center gap-2 mb-3 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(139,92,246,0.25)', color: '#C4B5FD' }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="#C4B5FD"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                   Топ Манга
@@ -106,25 +137,25 @@ export default function HomePage() {
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-5xl font-extrabold text-[#F5F7FA] leading-none tracking-tight mb-2">
+              <h1 className="hero-title text-3xl md:text-5xl font-extrabold text-[#F5F7FA] leading-none tracking-tight mb-2">
                 {featured.title}
               </h1>
-              <p className="text-sm text-[#9CA3AF] mb-4">
+              <p className="hero-copy text-sm text-[#9CA3AF] mb-4">
                 Зохиогч: <span className="text-[#D1D5DB]">{featured.author}</span>
                 <span className="mx-2 text-[#374151]">·</span>
                 <span className="text-[#D1D5DB]">{featured.chapterCount} бүлэг</span>
               </p>
 
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="hero-copy flex flex-wrap gap-2 mb-4">
                 {featured.genres.map((g) => <GenreChip key={g} label={g} size="sm" />)}
               </div>
 
-              <p className="text-sm text-[#9CA3AF] leading-relaxed mb-6 line-clamp-3 max-w-[480px]">
+              <p className="hero-copy text-sm text-[#9CA3AF] leading-relaxed mb-6 line-clamp-3 max-w-[480px]">
                 {featured.synopsis}
               </p>
 
               {/* Rating */}
-              <div className="flex items-center gap-3 mb-6">
+              <div className="hero-copy flex items-center gap-3 mb-6">
                 <div className="flex items-center gap-1">
                   {[1,2,3,4,5].map((s) => (
                     <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={s <= Math.round(featured.rating) ? '#8B5CF6' : '#1F2937'}>
@@ -140,7 +171,7 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => navigate(`/manga/${featured.id}/read/1`)}
-                  className="flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 active:scale-95 shadow-lg"
+                  className="hero-cta flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 active:scale-95 shadow-lg"
                   style={{ background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)', boxShadow: '0 8px 24px rgba(139,92,246,0.4)' }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -148,7 +179,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => navigate(`/manga/${featured.id}`)}
-                  className="flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold text-[#F5F7FA] border transition-all hover:bg-white/5"
+                  className="hero-cta flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold text-[#F5F7FA] border transition-all hover:bg-white/5"
                   style={{ borderColor: 'rgba(255,255,255,0.18)' }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -161,7 +192,7 @@ export default function HomePage() {
                     if (isGuest) navigate('/login?next=/')
                     else toggleSave(featured.id)
                   }}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all border ${
+                  className={`hero-cta flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all border ${
                     saved
                       ? 'text-[#8B5CF6] border-[#8B5CF6] bg-[rgba(139,92,246,0.1)]'
                       : 'text-[#9CA3AF] border-[rgba(255,255,255,0.12)] hover:border-white/20 hover:text-white'
@@ -181,7 +212,7 @@ export default function HomePage() {
         {continueReading.length > 0 && (
           <section className="mt-10">
             <SectionHeader title="Үргэлжлүүлэн унших" href="/library" />
-            <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-1 px-1">
+            <Stagger className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-1 px-1" delay={MOTION.staggerMs.tight} y={MOTION.rise.sm}>
               {continueReading.map((manga) => {
                 const pct = Math.round((manga.readProgress!.chapter / manga.chapterCount) * 100)
                 return (
@@ -227,23 +258,24 @@ export default function HomePage() {
                   </div>
                 )
               })}
-            </div>
+            </Stagger>
           </section>
         )}
 
         {/* ── Popular ── */}
         <section className="mt-10">
           <SectionHeader title="Эрэлттэй манга" href="/manga" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+          <Stagger className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
             {popular.map((manga, i) => (
               <MangaCard key={manga.id} manga={manga} rank={i + 1} />
             ))}
-          </div>
+          </Stagger>
         </section>
 
         {/* ── New Chapters ── */}
         <section className="mt-10">
           <SectionHeader title="Шинээр нэмэгдсэн бүлгүүд" />
+          <AnimateIn>
           <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             {newChapters.map((manga, i) => {
               const latestChapter = manga.chapters[manga.chapterCount - 1]
@@ -280,12 +312,13 @@ export default function HomePage() {
               )
             })}
           </div>
+          </AnimateIn>
         </section>
 
         {/* ── Genre chips strip ── */}
         <section className="mt-10">
           <SectionHeader title="Төрлөөр үзэх" href="/manga" />
-          <div className="flex flex-wrap gap-2">
+          <Stagger className="flex flex-wrap gap-2" delay={MOTION.staggerMs.tight} y={8}>
             {GENRE_CHIPS.map((g) => (
               <button
                 key={g}
@@ -296,17 +329,17 @@ export default function HomePage() {
                 {g}
               </button>
             ))}
-          </div>
+          </Stagger>
         </section>
 
         {/* ── Recommended ── */}
         <section className="mt-10 mb-10">
           <SectionHeader title="Танд санал болгох" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+          <Stagger className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
             {recommended.map((manga) => (
               <MangaCard key={manga.id} manga={manga} />
             ))}
-          </div>
+          </Stagger>
         </section>
 
       </div>

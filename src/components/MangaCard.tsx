@@ -28,7 +28,7 @@ export default function MangaCard({ manga, showProgress, rank, size = 'md' }: Ma
 
   return (
     <div
-      className="group cursor-pointer"
+      className="group cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-1 active:scale-[0.98]"
       onClick={() => navigate(`/manga/${manga.id}`)}
     >
       {/* Cover */}

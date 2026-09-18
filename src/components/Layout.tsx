@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { animate } from 'animejs'
 import NotificationPanel from './NotificationPanel'
 import { NOTIFICATIONS as INITIAL_NOTIFS, type Notification } from '@/data/store'
 import { useAuth } from '@/contexts/AuthContext'
+import { MOTION, prefersReducedMotion } from '@/lib/motion'
 
 const NAV_LINKS = [
   { href: '/', label: 'Нүүр' },
@@ -74,6 +76,39 @@ export default function Layout({ children, hideBottomNav }: LayoutProps) {
   const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
   const isReader = path.includes('/read/')
   const initial = profile?.name?.[0] || (isGuest ? '?' : 'М')
+  const navRef = useRef<HTMLElement>(null)
+  const indicatorRef = useRef<HTMLDivElement>(null)
+  const badgeRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    const indicator = indicatorRef.current
+    if (!nav || !indicator) return
+    const active = nav.querySelector('[data-nav-active="true"]') as HTMLElement | null
+    if (!active) return
+    const x = active.offsetLeft + active.offsetWidth / 2 - 8
+    if (prefersReducedMotion()) {
+      indicator.style.transform = `translateX(${x}px)`
+      return
+    }
+    const anim = animate(indicator, {
+      x,
+      duration: MOTION.duration.base,
+      ease: MOTION.ease.enter,
+    })
+    return () => { anim.pause() }
+  }, [path])
+
+  useLayoutEffect(() => {
+    if (unreadCount === 0 || !badgeRef.current || prefersReducedMotion()) return
+    const anim = animate(badgeRef.current, {
+      scale: [1, 1.35, 1],
+      loop: 3,
+      duration: 900,
+      ease: MOTION.ease.inOut,
+    })
+    return () => { anim.revert() }
+  }, [unreadCount])
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0D12' }}>
@@ -129,8 +164,18 @@ export default function Layout({ children, hideBottomNav }: LayoutProps) {
           <div className="flex items-center gap-2 ml-auto">
             {searchOpen ? (
               <div
-                className="flex items-center gap-2 rounded-xl px-3 py-2 border"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 border origin-right"
                 style={{ background: 'rgba(21,25,35,0.8)', borderColor: 'rgba(139,92,246,0.3)' }}
+                ref={(el) => {
+                  if (!el || prefersReducedMotion() || el.dataset.animated) return
+                  el.dataset.animated = '1'
+                  animate(el, {
+                    opacity: [0, 1],
+                    scale: [0.96, 1],
+                    duration: MOTION.duration.fast,
+                    ease: MOTION.ease.enter,
+                  })
+                }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -180,7 +225,7 @@ export default function Layout({ children, hideBottomNav }: LayoutProps) {
                   <path d="M13.73 21a2 2 0 01-3.46 0"/>
                 </svg>
                 {unreadCount > 0 && (
-                  <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: '#8B5CF6' }} />
+                  <div ref={badgeRef} className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: '#8B5CF6' }} />
                 )}
               </button>
               {notifOpen && (
@@ -247,16 +292,23 @@ export default function Layout({ children, hideBottomNav }: LayoutProps) {
 
       {!hideBottomNav && !isReader && (
         <nav
-          className="flex md:hidden fixed bottom-0 left-0 right-0 z-50 items-stretch border-t"
+          ref={navRef}
+          className="flex md:hidden fixed bottom-0 left-0 right-0 z-50 items-stretch border-t relative"
           style={{ background: 'rgba(8,10,15,0.97)', backdropFilter: 'blur(16px)', borderColor: 'rgba(255,255,255,0.07)' }}
         >
+          <div
+            ref={indicatorRef}
+            className="absolute top-1.5 h-0.5 w-4 rounded-full pointer-events-none"
+            style={{ background: '#8B5CF6', left: 0 }}
+          />
           {BOTTOM_NAV.map((item) => {
             const active = item.href === '/' ? path === '/' : path.startsWith(item.href)
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[56px]"
+                data-nav-active={active ? 'true' : 'false'}
+                className="flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[56px] transition-transform duration-200 active:scale-95"
               >
                 {item.icon(active)}
                 <span className={`text-[10px] font-semibold leading-none ${active ? 'text-[#8B5CF6]' : 'text-[#4B5563]'}`}>

@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { animate, spring } from 'animejs'
 import Layout from '@/components/Layout'
+import AnimateIn from '@/components/motion/AnimateIn'
 import { useAuth } from '@/contexts/AuthContext'
+import { MOTION, prefersReducedMotion } from '@/lib/motion'
 import { useNavigate } from '@/lib/nav'
 
 export default function LoginPage() {
@@ -16,6 +19,18 @@ export default function LoginPage() {
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const logoRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (!logoRef.current || prefersReducedMotion()) return
+    const anim = animate(logoRef.current, {
+      scale: [0.82, 1],
+      opacity: [0, 1],
+      duration: MOTION.duration.hero,
+      ease: spring({ bounce: 0.35, duration: 520 }),
+    })
+    return () => { anim.revert() }
+  }, [])
 
   useEffect(() => {
     if (!loading && user) navigate(next)
@@ -62,9 +77,10 @@ export default function LoginPage() {
 
   return (
     <Layout>
-      <div className="max-w-[420px] mx-auto px-4 mt-16 pb-16 fade-in">
+      <AnimateIn className="max-w-[420px] mx-auto px-4 mt-16 pb-16">
         <div className="text-center mb-8">
           <div
+            ref={logoRef}
             className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
             style={{ background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)' }}
           >
@@ -79,6 +95,7 @@ export default function LoginPage() {
           </p>
         </div>
 
+        <AnimateIn key={step} y={10}>
         <div className="rounded-2xl border p-5" style={{ background: '#151923', borderColor: 'rgba(255,255,255,0.08)' }}>
           {step === 'phone' ? (
             <>
@@ -130,7 +147,8 @@ export default function LoginPage() {
           )}
           {error && <p className="text-[#F87171] text-sm mt-4">{error}</p>}
         </div>
-      </div>
+        </AnimateIn>
+      </AnimateIn>
     </Layout>
   )
 }

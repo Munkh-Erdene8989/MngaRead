@@ -1,6 +1,8 @@
 'use client'
 
 import Layout from '@/components/Layout'
+import AnimateIn from '@/components/motion/AnimateIn'
+import Stagger from '@/components/motion/Stagger'
 import { GENRES } from '@/data/manga'
 import { useNavigate } from '@/lib/nav'
 import { useCatalog } from '@/contexts/CatalogContext'
@@ -61,13 +63,13 @@ export default function GenresPage() {
       <div className="max-w-[1280px] mx-auto px-4 md:px-6 mt-6 pb-10">
 
         {/* Header */}
-        <div className="mb-8">
+        <AnimateIn className="mb-8">
           <h1 className="text-[#F5F7FA] text-3xl font-extrabold tracking-tight mb-2">Төрлүүд</h1>
           <p className="text-[#9CA3AF] text-sm">{GENRES.length} төрөл байна — дуртай жанраа сонгоорой</p>
-        </div>
+        </AnimateIn>
 
         {/* Genre grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
+        <Stagger className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
           {GENRES.map((genre) => {
             const meta = getGenreMeta(genre)
             const count = list.filter((m) => m.genres.includes(genre)).length
@@ -125,7 +127,7 @@ export default function GenresPage() {
               </button>
             )
           })}
-        </div>
+        </Stagger>
 
         {/* Featured per genre */}
         <h2 className="text-[#F5F7FA] font-extrabold text-xl mb-5">Төрлөөр онцлох мангууд</h2>

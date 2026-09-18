@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Layout from '@/components/Layout'
 import MangaCard from '@/components/MangaCard'
 import GenreChip from '@/components/GenreChip'
+import AnimateIn from '@/components/motion/AnimateIn'
+import Stagger from '@/components/motion/Stagger'
 import { isChapterAccessible, isChapterFree } from '@/data/store'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
@@ -89,7 +91,7 @@ export default function DetailPage({ id }: DetailPageProps) {
         </button>
 
         {/* ── Hero ── */}
-        <div className="flex flex-col md:flex-row gap-6 md:gap-10 mt-6">
+        <AnimateIn className="flex flex-col md:flex-row gap-6 md:gap-10 mt-6" y={18}>
 
           {/* Cover */}
           <div className="flex-shrink-0 mx-auto md:mx-0">
@@ -231,7 +233,7 @@ export default function DetailPage({ id }: DetailPageProps) {
               </button>
             </div>
           </div>
-        </div>
+        </AnimateIn>
 
         {/* ── Chapter List ── */}
         <section className="mt-12">
@@ -359,14 +361,15 @@ export default function DetailPage({ id }: DetailPageProps) {
               <div className="w-1 h-5 rounded-full" style={{ background: '#8B5CF6' }} />
               <h2 className="text-[#F5F7FA] font-bold text-lg">Төстэй манга</h2>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+            <Stagger className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
               {relatedList.map((m) => <MangaCard key={m.id} manga={m} />)}
-            </div>
+            </Stagger>
           </section>
         )}
 
         {/* ── Comments ── */}
         <section className="mt-12 mb-12">
+          <AnimateIn>
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="w-1 h-5 rounded-full" style={{ background: '#8B5CF6' }} />
@@ -429,6 +432,7 @@ export default function DetailPage({ id }: DetailPageProps) {
               )
             })}
           </div>
+          </AnimateIn>
         </section>
       </div>
     </Layout>

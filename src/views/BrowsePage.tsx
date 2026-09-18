@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import Layout from '@/components/Layout'
 import MangaCard from '@/components/MangaCard'
 import GenreChip from '@/components/GenreChip'
+import AnimateIn from '@/components/motion/AnimateIn'
+import Stagger from '@/components/motion/Stagger'
 import { GENRES } from '@/data/manga'
 import { useNavigate } from '@/lib/nav'
 import { useCatalog } from '@/contexts/CatalogContext'
@@ -108,10 +110,10 @@ export default function BrowsePage() {
       <div className="max-w-[1280px] mx-auto px-4 md:px-6 mt-6">
 
         {/* Page header */}
-        <div className="mb-6">
+        <AnimateIn className="mb-6">
           <h1 className="text-[#F5F7FA] text-2xl font-extrabold tracking-tight mb-1">Манга</h1>
           <p className="text-[#9CA3AF] text-sm">{list.length} манга байна</p>
-        </div>
+        </AnimateIn>
 
         {/* Search */}
         <div className="relative mb-5">
@@ -259,11 +261,14 @@ export default function BrowsePage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
+              <Stagger
+                key={`${query}-${selectedGenres.join(',')}-${selectedStatus}-${selectedYear}-${sort}`}
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5"
+              >
                 {filtered.map((manga) => (
                   <MangaCard key={manga.id} manga={manga} />
                 ))}
-              </div>
+              </Stagger>
             )}
           </div>
         </div>

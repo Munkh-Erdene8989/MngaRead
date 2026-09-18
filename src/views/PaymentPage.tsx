@@ -1,14 +1,18 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { animate, spring } from 'animejs'
 import Layout from '@/components/Layout'
+import AnimateIn from '@/components/motion/AnimateIn'
+import Stagger from '@/components/motion/Stagger'
 import { type SubPlan } from '@/data/store'
 import { useNavigate, useBack } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCatalog } from '@/contexts/CatalogContext'
 import { getClientAuth } from '@/lib/firebase/client'
 import { formatMnDate, addMonths, CHAPTER_PRICE, MONTHLY_PRICE, YEARLY_PRICE } from '@/lib/constants'
+import { MOTION, prefersReducedMotion } from '@/lib/motion'
 
 const PLANS: { id: SubPlan; label: string; price: string; priceNum: string; period: string; badge?: string; features: string[] }[] = [
   {
@@ -154,43 +158,16 @@ export default function PaymentPage() {
   if (step === 'success') {
     return (
       <Layout>
-        <div className="max-w-[480px] mx-auto px-4 mt-16 text-center fade-in">
-          <div
-            className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6"
-            style={{ background: 'rgba(139,92,246,0.15)' }}
-          >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2.5">
-              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          </div>
-          <h2 className="text-[#F5F7FA] font-extrabold text-2xl mb-2">
-            {mode === 'buy' ? 'Амжилттай худалдан авлаа!' : 'Захиалга амжилттай!'}
-          </h2>
-          <p className="text-[#9CA3AF] text-sm leading-relaxed mb-8">
-            {mode === 'buy'
+        <SuccessPanel
+          title={mode === 'buy' ? 'Амжилттай худалдан авлаа!' : 'Захиалга амжилттай!'}
+          body={
+            mode === 'buy'
               ? `${manga?.title} — Бүлэг ${chapterNum} уншихад бэлэн боллоо.`
               : `${selectedPlan === 'yearly' ? 'Жилийн' : 'Сарын'} захиалга идэвхжилээ. Бүх агуулга нээлттэй боллоо!`
-            }
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {manga && (
-              <button
-                onClick={() => navigate(`/manga/${manga.id}/read/${chapterNum || 1}`)}
-                className="px-6 py-3 rounded-2xl text-sm font-bold text-white"
-                style={{ background: '#8B5CF6' }}
-              >
-                Унших
-              </button>
-            )}
-            <button
-              onClick={() => navigate('/')}
-              className="px-6 py-3 rounded-2xl text-sm font-semibold text-[#9CA3AF] border border-[rgba(255,255,255,0.12)]"
-            >
-              Нүүр хуудас
-            </button>
-          </div>
-        </div>
+          }
+          primary={manga ? { label: 'Унших', onClick: () => navigate(`/manga/${manga.id}/read/${chapterNum || 1}`) } : undefined}
+          secondary={{ label: 'Нүүр хуудас', onClick: () => navigate('/') }}
+        />
       </Layout>
     )
   }
@@ -317,7 +294,7 @@ export default function PaymentPage() {
             </div>
 
             {step === 'choose' ? (
-              <div className="grid md:grid-cols-2 gap-5 max-w-[640px] mx-auto mb-8">
+              <Stagger className="grid md:grid-cols-2 gap-5 max-w-[640px] mx-auto mb-8" y={12}>
                 {PLANS.map((plan) => {
                   const active = selectedPlan === plan.id
                   return (
@@ -367,7 +344,7 @@ export default function PaymentPage() {
                     </button>
                   )
                 })}
-              </div>
+              </Stagger>
             ) : (
               <div className="max-w-[420px] mx-auto mb-8 fade-in">
                 <div className="rounded-2xl border p-5 mb-4" style={{ background: '#151923', borderColor: 'rgba(255,255,255,0.07)' }}>
@@ -416,5 +393,64 @@ export default function PaymentPage() {
         )}
       </div>
     </Layout>
+  )
+}
+
+function SuccessPanel({
+  title,
+  body,
+  primary,
+  secondary,
+}: {
+  title: string
+  body: string
+  primary?: { label: string; onClick: () => void }
+  secondary: { label: string; onClick: () => void }
+}) {
+  const iconRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (!iconRef.current || prefersReducedMotion()) return
+    const anim = animate(iconRef.current, {
+      scale: [0.7, 1],
+      opacity: [0, 1],
+      duration: MOTION.duration.hero,
+      ease: spring({ bounce: 0.4, duration: 560 }),
+    })
+    return () => { anim.revert() }
+  }, [])
+
+  return (
+    <AnimateIn className="max-w-[480px] mx-auto px-4 mt-16 text-center">
+      <div
+        ref={iconRef}
+        className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6"
+        style={{ background: 'rgba(139,92,246,0.15)' }}
+      >
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2.5">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h2 className="text-[#F5F7FA] font-extrabold text-2xl mb-2">{title}</h2>
+      <p className="text-[#9CA3AF] text-sm leading-relaxed mb-8">{body}</p>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        {primary && (
+          <button
+            onClick={primary.onClick}
+            className="px-6 py-3 rounded-2xl text-sm font-bold text-white"
+            style={{ background: '#8B5CF6' }}
+          >
+            {primary.label}
+          </button>
+        )}
+        <button
+          onClick={secondary.onClick}
+          className="px-6 py-3 rounded-2xl text-sm font-semibold text-[#9CA3AF] border border-[rgba(255,255,255,0.12)]"
+        >
+          {secondary.label}
+        </button>
+      </div>
+    </AnimateIn>
   )
 }

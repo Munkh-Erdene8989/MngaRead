@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           from: process.env.CALLPRO_FROM,
           to: phone,
-          text: `MANGA.MN баталгаажуулах код: ${code}. ${Math.floor(ttl / 60)} минутын хугацаанд хүчинтэй.`,
+          text: `Таны баталгаажуулах код: ${code}. ${Math.floor(ttl / 60)} минутын хугацаанд хүчинтэй.`,
         }),
       })
       if (!res.ok) {

@@ -9,8 +9,8 @@ interface GenreChipProps {
 export default function GenreChip({ label, active, onClick, onRemove, size = 'md' }: GenreChipProps) {
   const base =
     size === 'sm'
-      ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors'
-      : 'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors'
+      ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-200 active:scale-95'
+      : 'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 active:scale-95'
 
   const color = active
     ? 'bg-[#8B5CF6] text-white'

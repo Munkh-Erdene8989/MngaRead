@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
+import AnimateIn from '@/components/motion/AnimateIn'
 import { AVATAR_OPTIONS, type SubPlan } from '@/data/store'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
@@ -87,10 +88,11 @@ export default function ProfilePage() {
       <div className="max-w-[1280px] mx-auto px-4 md:px-6 mt-6 pb-10">
 
         {/* Hero banner */}
-        <div
-          className="relative rounded-3xl overflow-hidden mb-6"
-          style={{ background: 'linear-gradient(135deg,#1a1040 0%,#0f1628 50%,#0B0D12 100%)' }}
-        >
+        <AnimateIn className="relative rounded-3xl overflow-hidden mb-6" y={16}>
+          <div
+            className="relative rounded-3xl overflow-hidden"
+            style={{ background: 'linear-gradient(135deg,#1a1040 0%,#0f1628 50%,#0B0D12 100%)' }}
+          >
           {/* Decorative blobs */}
           <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-20 blur-3xl" style={{ background: '#8B5CF6' }} />
           <div className="absolute -bottom-10 left-20 w-32 h-32 rounded-full opacity-10 blur-3xl" style={{ background: '#6D28D9' }} />
@@ -213,7 +215,8 @@ export default function ProfilePage() {
               </div>
             ))}
           </div>
-        </div>
+          </div>
+        </AnimateIn>
 
         {/* Section tabs */}
         <div className="flex gap-1 p-1 rounded-2xl mb-6 w-fit" style={{ background: '#151923' }}>
