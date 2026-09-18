@@ -4,15 +4,16 @@ import { useState } from 'react'
 import Layout from '@/components/Layout'
 import MangaCard from '@/components/MangaCard'
 import GenreChip from '@/components/GenreChip'
-import { getManga, getRelated } from '@/data/manga'
 import { isChapterAccessible, isChapterFree } from '@/data/store'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCatalog } from '@/contexts/CatalogContext'
 
 interface DetailPageProps { id: string }
 
 export default function DetailPage({ id }: DetailPageProps) {
   const navigate = useNavigate()
+  const { getManga, related, loading: catalogLoading } = useCatalog()
   const manga = getManga(id)
   const { isGuest, isSaved, toggleSave, plan, purchases, library, profile } = useAuth()
   const saved = isSaved(id)
@@ -30,8 +31,8 @@ export default function DetailPage({ id }: DetailPageProps) {
               <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
             </svg>
           </div>
-          <p className="text-[#F5F7FA] font-bold text-xl mb-2">Манга олдсонгүй</p>
-          <p className="text-[#9CA3AF] text-sm mb-6">Хайсан манга байхгүй байна</p>
+          <p className="text-[#F5F7FA] font-bold text-xl mb-2">{catalogLoading ? 'Ачааллаж байна…' : 'Манга олдсонгүй'}</p>
+          <p className="text-[#9CA3AF] text-sm mb-6">{catalogLoading ? 'Каталог уншиж байна' : 'Хайсан манга байхгүй байна'}</p>
           <button onClick={() => navigate('/manga')} className="px-6 py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B5CF6' }}>
             Манга үзэх
           </button>
@@ -40,7 +41,7 @@ export default function DetailPage({ id }: DetailPageProps) {
     )
   }
 
-  const related = getRelated(id)
+  const relatedList = related(id)
   const libItem = library.find((item) => item.mangaId === id)
   const readChapterNum = libItem?.progress?.chapter ?? manga.readProgress?.chapter ?? 0
 
@@ -352,14 +353,14 @@ export default function DetailPage({ id }: DetailPageProps) {
         </section>
 
         {/* ── Related ── */}
-        {related.length > 0 && (
+        {relatedList.length > 0 && (
           <section className="mt-12">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-1 h-5 rounded-full" style={{ background: '#8B5CF6' }} />
               <h2 className="text-[#F5F7FA] font-bold text-lg">Төстэй манга</h2>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
-              {related.map((m) => <MangaCard key={m.id} manga={m} />)}
+              {relatedList.map((m) => <MangaCard key={m.id} manga={m} />)}
             </div>
           </section>
         )}

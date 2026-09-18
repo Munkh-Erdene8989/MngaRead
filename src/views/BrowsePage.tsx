@@ -5,8 +5,9 @@ import { useSearchParams } from 'next/navigation'
 import Layout from '@/components/Layout'
 import MangaCard from '@/components/MangaCard'
 import GenreChip from '@/components/GenreChip'
-import { MANGA_LIST, GENRES } from '@/data/manga'
+import { GENRES } from '@/data/manga'
 import { useNavigate } from '@/lib/nav'
+import { useCatalog } from '@/contexts/CatalogContext'
 
 const STATUSES = ['Үргэлжилж буй', 'Дууссан']
 const SORTS = [
@@ -18,6 +19,7 @@ const YEARS = ['2024', '2023', '2022', '2021', '2020', '2019', '2018']
 
 export default function BrowsePage() {
   const navigate = useNavigate()
+  const { list } = useCatalog()
   const searchParams = useSearchParams()
   const initialQ = searchParams?.get('q') || ''
   const initialGenre = searchParams?.get('genre')
@@ -33,13 +35,13 @@ export default function BrowsePage() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const suggestions = inputVal.length > 0
-    ? MANGA_LIST.filter((m) =>
+    ? list.filter((m) =>
         m.title.toLowerCase().includes(inputVal.toLowerCase()) ||
         m.author.toLowerCase().includes(inputVal.toLowerCase())
       ).slice(0, 6)
     : []
 
-  const filtered = MANGA_LIST.filter((m) => {
+  const filtered = list.filter((m) => {
     if (query && !m.title.toLowerCase().includes(query.toLowerCase()) && !m.author.toLowerCase().includes(query.toLowerCase())) return false
     if (selectedGenres.length > 0 && !selectedGenres.some((g) => m.genres.includes(g))) return false
     if (selectedStatus && m.status !== selectedStatus) return false
@@ -108,7 +110,7 @@ export default function BrowsePage() {
         {/* Page header */}
         <div className="mb-6">
           <h1 className="text-[#F5F7FA] text-2xl font-extrabold tracking-tight mb-1">Манга</h1>
-          <p className="text-[#9CA3AF] text-sm">{MANGA_LIST.length} манга байна</p>
+          <p className="text-[#9CA3AF] text-sm">{list.length} манга байна</p>
         </div>
 
         {/* Search */}

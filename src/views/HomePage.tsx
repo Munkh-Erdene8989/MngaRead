@@ -4,16 +4,11 @@ import Layout from '@/components/Layout'
 import MangaCard from '@/components/MangaCard'
 import GenreChip from '@/components/GenreChip'
 import ProgressBar from '@/components/ProgressBar'
-import { MANGA_LIST } from '@/data/manga'
-import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCatalog } from '@/contexts/CatalogContext'
+import { useNavigate } from '@/lib/nav'
 
-const featured = MANGA_LIST[1] // Хар Нар — highest rated
-const popular = MANGA_LIST.slice(0, 8)
-const newChapters = [
-  MANGA_LIST[0], MANGA_LIST[1], MANGA_LIST[2], MANGA_LIST[6], MANGA_LIST[7],
-]
-const recommended = [MANGA_LIST[3], MANGA_LIST[4], MANGA_LIST[5], MANGA_LIST[8], MANGA_LIST[9]]
+const GENRE_CHIPS = ['Адал явдал','Тулаан','Романтик','Фантази','Инээдэм','Нууцлаг','Амьдрал','Шинжлэх ухаан']
 
 function SectionHeader({ title, href, label = 'Бүгдийг харах' }: { title: string; href?: string; label?: string }) {
   const navigate = useNavigate()
@@ -41,14 +36,27 @@ function SectionHeader({ title, href, label = 'Бүгдийг харах' }: { t
 export default function HomePage() {
   const navigate = useNavigate()
   const { isSaved, toggleSave, isGuest, library } = useAuth()
-  const saved = isSaved(featured.id)
+  const { list, getManga } = useCatalog()
+  const featured = [...list].sort((a, b) => b.rating - a.rating)[0] || list[0]
+  const popular = [...list].sort((a, b) => b.ratingCount - a.ratingCount).slice(0, 8)
+  const newChapters = [...list].slice(0, 5)
+  const recommended = [...list].slice().reverse().slice(0, 5)
+  const saved = featured ? isSaved(featured.id) : false
   const continueReading = library
     .filter((item) => item.status === 'reading' && item.progress)
     .map((item) => {
-      const manga = MANGA_LIST.find((m) => m.id === item.mangaId)
+      const manga = getManga(item.mangaId)
       return manga ? { ...manga, readProgress: item.progress } : null
     })
     .filter((m): m is NonNullable<typeof m> => Boolean(m))
+
+  if (!featured) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh] text-[#9CA3AF] text-sm">Ачааллаж байна…</div>
+      </Layout>
+    )
+  }
 
   return (
     <Layout>
@@ -278,7 +286,7 @@ export default function HomePage() {
         <section className="mt-10">
           <SectionHeader title="Төрлөөр үзэх" href="/manga" />
           <div className="flex flex-wrap gap-2">
-            {['Адал явдал','Тулаан','Романтик','Фантази','Инээдэм','Нууцлаг','Амьдрал','Шинжлэх ухаан'].map((g) => (
+            {GENRE_CHIPS.map((g) => (
               <button
                 key={g}
                 onClick={() => navigate('/manga')}

@@ -1,8 +1,9 @@
 'use client'
 
 import Layout from '@/components/Layout'
-import { GENRES, MANGA_LIST } from '@/data/manga'
+import { GENRES } from '@/data/manga'
 import { useNavigate } from '@/lib/nav'
+import { useCatalog } from '@/contexts/CatalogContext'
 
 const GENRE_META: Record<string, { color: string; accent: string; icon: React.ReactNode }> = {
   'Фантази': {
@@ -53,6 +54,7 @@ function getGenreMeta(genre: string) {
 
 export default function GenresPage() {
   const navigate = useNavigate()
+  const { list } = useCatalog()
 
   return (
     <Layout>
@@ -68,8 +70,8 @@ export default function GenresPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
           {GENRES.map((genre) => {
             const meta = getGenreMeta(genre)
-            const count = MANGA_LIST.filter((m) => m.genres.includes(genre)).length
-            const topManga = MANGA_LIST.filter((m) => m.genres.includes(genre))[0]
+            const count = list.filter((m) => m.genres.includes(genre)).length
+            const topManga = list.filter((m) => m.genres.includes(genre))[0]
 
             return (
               <button
@@ -130,7 +132,7 @@ export default function GenresPage() {
         <div className="space-y-8">
           {GENRES.slice(0, 4).map((genre) => {
             const meta = getGenreMeta(genre)
-            const mangaInGenre = MANGA_LIST.filter((m) => m.genres.includes(genre)).slice(0, 4)
+            const mangaInGenre = list.filter((m) => m.genres.includes(genre)).slice(0, 4)
             if (mangaInGenre.length === 0) return null
 
             return (
@@ -150,7 +152,7 @@ export default function GenresPage() {
                       className="text-xs font-bold px-2 py-0.5 rounded-full"
                       style={{ background: `${meta.accent}18`, color: meta.accent }}
                     >
-                      {MANGA_LIST.filter((m) => m.genres.includes(genre)).length} манга
+                      {list.filter((m) => m.genres.includes(genre)).length} манга
                     </span>
                   </div>
                   <button

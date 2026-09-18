@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminAuth, adminDb } from '@/lib/firebase/admin'
 import { createQpayInvoice } from '@/lib/qpay'
 import { CHAPTER_PRICE, MONTHLY_PRICE, YEARLY_PRICE } from '@/lib/constants'
-import { getManga } from '@/data/manga'
+import { mangaFromRecord } from '@/data/manga'
 
 async function getUid(req: NextRequest): Promise<string | null> {
   const header = req.headers.get('authorization') || ''
@@ -40,7 +40,10 @@ export async function POST(req: NextRequest) {
       if (!body.mangaId || body.chapterNum == null) {
         return NextResponse.json({ error: 'Бүлгийн мэдээлэл дутуу' }, { status: 400 })
       }
-      const manga = getManga(body.mangaId)
+      const mangaSnap = await adminDb().collection('manga').doc(body.mangaId).get()
+      const manga = mangaSnap.exists
+        ? mangaFromRecord(mangaSnap.id, mangaSnap.data() as Record<string, unknown>)
+        : null
       if (!manga) return NextResponse.json({ error: 'Манга олдсонгүй' }, { status: 404 })
       amount = CHAPTER_PRICE
       description = `${manga.title} — Бүлэг ${body.chapterNum}`

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { getManga, READER_PAGES } from '@/data/manga'
+import { READER_PAGES } from '@/data/manga'
 import { isChapterAccessible } from '@/data/store'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCatalog } from '@/contexts/CatalogContext'
 
 interface ReaderPageProps { id: string; chapter: string }
 
@@ -20,6 +21,7 @@ const BG: Record<BgColor, { page: string; ui: string; text: string }> = {
 
 export default function ReaderPage({ id, chapter }: ReaderPageProps) {
   const navigate = useNavigate()
+  const { getManga } = useCatalog()
   const manga = getManga(id)
   const chapterNum = parseInt(chapter, 10) || 1
   const { isGuest, plan, purchases, updateProgress, loading } = useAuth()

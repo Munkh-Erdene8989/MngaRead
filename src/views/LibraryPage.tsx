@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import Layout from '@/components/Layout'
 import ProgressBar from '@/components/ProgressBar'
-import { MANGA_LIST } from '@/data/manga'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCatalog } from '@/contexts/CatalogContext'
 
 type Tab = 'reading' | 'saved' | 'completed'
 
@@ -27,6 +27,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 export default function LibraryPage() {
   const navigate = useNavigate()
   const { isGuest, library, profile, removeFromLibrary, markCompleted } = useAuth()
+  const { getManga } = useCatalog()
   const [tab, setTab] = useState<Tab>('reading')
   const [contextMenu, setContextMenu] = useState<string | null>(null)
 
@@ -34,7 +35,7 @@ export default function LibraryPage() {
     library
       .filter((item) => item.status === status)
       .map((item) => {
-        const manga = MANGA_LIST.find((m) => m.id === item.mangaId)
+        const manga = getManga(item.mangaId)
         if (!manga) return null
         return { ...manga, readProgress: item.progress }
       })

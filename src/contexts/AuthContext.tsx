@@ -46,6 +46,7 @@ export interface AuthProfile extends UserProfile {
   phone: string
   plan: SubPlan
   planExpiresAt: string | null
+  role: 'admin' | 'user'
 }
 
 interface AuthContextValue {
@@ -57,6 +58,7 @@ interface AuthContextValue {
   library: LibraryItem[]
   loading: boolean
   isGuest: boolean
+  isAdmin: boolean
   signInWithToken: (token: string) => Promise<void>
   signOut: () => Promise<void>
   updateProfile: (patch: Partial<Pick<UserProfile, 'name' | 'bio' | 'avatar'>>) => Promise<void>
@@ -94,6 +96,7 @@ function mapProfile(uid: string, phone: string, data: Record<string, unknown> | 
     phone,
     plan,
     planExpiresAt,
+    role: data?.role === 'admin' ? 'admin' : 'user',
   }
 }
 
@@ -120,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone,
         plan: 'none',
         planExpiresAt: null,
+        role: 'user',
         createdAt: new Date().toISOString(),
       }
       await setDoc(userRef, created)
@@ -277,6 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     library,
     loading,
     isGuest: !user,
+    isAdmin: profile?.role === 'admin',
     signInWithToken,
     signOut,
     updateProfile,

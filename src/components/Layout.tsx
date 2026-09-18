@@ -63,7 +63,7 @@ interface LayoutProps {
 export default function Layout({ children, hideBottomNav }: LayoutProps) {
   const path = usePathname() || '/'
   const router = useRouter()
-  const { profile, isGuest } = useAuth()
+  const { profile, isGuest, isAdmin } = useAuth()
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [notifOpen, setNotifOpen] = useState(false)
@@ -112,6 +112,18 @@ export default function Layout({ children, hideBottomNav }: LayoutProps) {
                 </Link>
               )
             })}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  path.startsWith('/admin')
+                    ? 'text-[#F5F7FA] bg-[rgba(255,255,255,0.07)]'
+                    : 'text-[#4B5563] hover:text-[#F5F7FA] hover:bg-[rgba(255,255,255,0.04)]'
+                }`}
+              >
+                Админ
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-2 ml-auto">

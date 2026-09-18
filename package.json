@@ -6,7 +6,8 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",
-    "seed": "tsx scripts/seed-manga.ts"
+    "seed": "tsx scripts/seed-manga.ts",
+    "set-admin": "tsx scripts/set-admin.ts"
   },
   "dependencies": {
     "firebase": "^11.10.0",

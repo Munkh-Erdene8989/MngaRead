@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { type SubPlan } from '@/data/store'
-import { getManga } from '@/data/manga'
 import { useNavigate, useBack } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCatalog } from '@/contexts/CatalogContext'
 import { getClientAuth } from '@/lib/firebase/client'
 import { formatMnDate, addMonths, CHAPTER_PRICE, MONTHLY_PRICE, YEARLY_PRICE } from '@/lib/constants'
 
@@ -55,6 +55,7 @@ export default function PaymentPage() {
   const back = useBack()
   const searchParams = useSearchParams()
   const { user, isGuest, refresh, loading } = useAuth()
+  const { getManga } = useCatalog()
   const qs = searchParams?.toString() || ''
   const mangaId = searchParams?.get('manga')
   const chapterParam = searchParams?.get('chapter')

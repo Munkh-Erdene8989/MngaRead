@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { AVATAR_OPTIONS, type SubPlan } from '@/data/store'
-import { getManga } from '@/data/manga'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCatalog } from '@/contexts/CatalogContext'
 import { formatMnDate, MONTHLY_PRICE, YEARLY_PRICE } from '@/lib/constants'
 
 const STAT_ITEMS = [
@@ -23,7 +23,8 @@ const PLAN_LABELS: Record<SubPlan, string> = {
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { profile, plan, planExpiresAt, purchases, library, isGuest, updateProfile, signOut, loading } = useAuth()
+  const { profile, plan, planExpiresAt, purchases, library, isGuest, isAdmin, updateProfile, signOut, loading } = useAuth()
+  const { getManga } = useCatalog()
   const [editing, setEditing] = useState(false)
   const [draftName, setDraftName] = useState(profile?.name || '')
   const [draftBio, setDraftBio] = useState(profile?.bio || '')
@@ -420,6 +421,15 @@ export default function ProfilePage() {
 
             {/* Sign out */}
             <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              {isAdmin && (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white mb-3"
+                  style={{ background: '#8B5CF6' }}
+                >
+                  Хяналтын самбар
+                </button>
+              )}
               <button
                 onClick={async () => { await signOut(); navigate('/') }}
                 className="w-full py-3 rounded-xl text-sm font-bold text-[#F87171] border border-[rgba(248,113,113,0.15)] hover:bg-[rgba(248,113,113,0.05)] transition-colors"

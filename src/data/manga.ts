@@ -32,7 +32,7 @@ const CHAPTER_TITLES = [
   'Эртний тангараг', 'Мартагдсан нэр', 'Цуснаас цус', 'Харанхуй гэрэл', 'Сүүлийн тулаан',
 ]
 
-const makeChapters = (count: number, readUpTo = 0): Chapter[] =>
+export const makeChapters = (count: number, readUpTo = 0): Chapter[] =>
   Array.from({ length: count }, (_, i) => ({
     id: i + 1,
     number: i + 1,
@@ -246,9 +246,34 @@ export function getManga(id: string): Manga | undefined {
 }
 
 export function getRelated(id: string): Manga[] {
-  const manga = getManga(id)
+  return getRelatedFrom(MANGA_LIST, id)
+}
+
+export function getRelatedFrom(list: Manga[], id: string): Manga[] {
+  const manga = list.find((m) => m.id === id)
   if (!manga) return []
-  return MANGA_LIST.filter(
+  return list.filter(
     (m) => m.id !== id && m.genres.some((g) => manga.genres.includes(g))
   ).slice(0, 5)
+}
+
+export function mangaFromRecord(id: string, data: Record<string, unknown>): Manga {
+  const chapterCount = Math.max(1, Number(data.chapterCount) || 1)
+  return {
+    id,
+    title: String(data.title || 'Гарчиггүй'),
+    author: String(data.author || ''),
+    artist: String(data.artist || data.author || ''),
+    genres: Array.isArray(data.genres) ? data.genres.map(String) : [],
+    status: data.status === 'Дууссан' ? 'Дууссан' : 'Үргэлжилж буй',
+    rating: Number(data.rating) || 0,
+    ratingCount: Number(data.ratingCount) || 0,
+    chapterCount,
+    synopsis: String(data.synopsis || ''),
+    coverColor: String(data.coverColor || '#0d0a1e'),
+    coverImage: String(data.coverImage || ''),
+    year: Number(data.year) || new Date().getFullYear(),
+    chapters: makeChapters(chapterCount),
+    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
+  }
 }

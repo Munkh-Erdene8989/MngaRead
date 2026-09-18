@@ -3,6 +3,7 @@ import { adminAuth, adminDb } from '@/lib/firebase/admin'
 import { hashOtp, safeEqual } from '@/lib/billing'
 import { AVATAR_OPTIONS } from '@/data/store'
 import { normalizeMnPhone, toE164 } from '@/lib/constants'
+import { adminPhoneList } from '@/lib/require-admin'
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
 
     const userRef = db.collection('users').doc(uid)
     const userSnap = await userRef.get()
+    const isAdmin = adminPhoneList().includes(phone) || userSnap.data()?.role === 'admin'
     if (!userSnap.exists) {
       await userRef.set({
         name: `Хэрэглэгч ${phone.slice(-4)}`,
@@ -65,11 +67,15 @@ export async function POST(req: NextRequest) {
         phone,
         plan: 'none',
         planExpiresAt: null,
+        role: isAdmin ? 'admin' : 'user',
         createdAt: new Date().toISOString(),
       })
+    } else if (isAdmin && userSnap.data()?.role !== 'admin') {
+      await userRef.set({ role: 'admin', updatedAt: new Date().toISOString() }, { merge: true })
     }
 
-    const token = await auth.createCustomToken(uid, { phone })
+    await auth.setCustomUserClaims(uid, { phone, admin: isAdmin })
+    const token = await auth.createCustomToken(uid, { phone, admin: isAdmin })
     return NextResponse.json({ ok: true, token })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
