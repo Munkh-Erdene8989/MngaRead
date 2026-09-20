@@ -24,6 +24,9 @@ service cloud.firestore {
     match /otps/{phone} {
       allow read, write: if false;
     }
+    match /admin_credentials/{phone} {
+      allow read, write: if false;
+    }
     match /invoices/{id} {
       allow read: if request.auth != null && resource.data.uid == request.auth.uid;
       allow write: if false;

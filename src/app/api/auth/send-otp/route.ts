@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase/admin'
 import { generateOtp, hashOtp } from '@/lib/billing'
 import { normalizeMnPhone } from '@/lib/constants'
+import { isAdminPhone } from '@/lib/admin-auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,6 +10,13 @@ export async function POST(req: NextRequest) {
     const phone = normalizeMnPhone(body.phone || '')
     if (!phone) {
       return NextResponse.json({ error: 'Утасны дугаар буруу байна' }, { status: 400 })
+    }
+
+    if (await isAdminPhone(phone)) {
+      return NextResponse.json(
+        { error: 'Админ эрхтэй дугаар нууц үгээр нэвтэрнэ үү' },
+        { status: 400 }
+      )
     }
 
     const db = adminDb()

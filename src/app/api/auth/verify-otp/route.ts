@@ -4,6 +4,7 @@ import { hashOtp, safeEqual } from '@/lib/billing'
 import { AVATAR_OPTIONS } from '@/data/store'
 import { normalizeMnPhone, toE164 } from '@/lib/constants'
 import { adminPhoneList } from '@/lib/require-admin'
+import { isAdminPhone } from '@/lib/admin-auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +13,13 @@ export async function POST(req: NextRequest) {
     const code = (body.code || '').trim()
     if (!phone || !/^\d{4,8}$/.test(code)) {
       return NextResponse.json({ error: 'Код буруу байна' }, { status: 400 })
+    }
+
+    if (await isAdminPhone(phone)) {
+      return NextResponse.json(
+        { error: 'Админ эрхтэй дугаар нууц үгээр нэвтэрнэ үү' },
+        { status: 400 }
+      )
     }
 
     const db = adminDb()

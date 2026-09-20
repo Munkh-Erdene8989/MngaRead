@@ -135,6 +135,13 @@ export default function AdminPage() {
   const [form, setForm] = useState<MangaForm>(EMPTY_FORM)
   const [editing, setEditing] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
+  const [passwordOpen, setPasswordOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [adminPhone, setAdminPhone] = useState('')
+  const [adminPassword, setAdminPassword] = useState('')
+  const [notice, setNotice] = useState('')
 
   const load = useCallback(async () => {
     setError('')
@@ -160,7 +167,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (loading) return
     if (isGuest) {
-      navigate('/login?next=/admin')
+      navigate('/admin/login?next=/admin')
       return
     }
     load()
@@ -236,6 +243,51 @@ export default function AdminPage() {
     }
   }
 
+  const changePassword = async () => {
+    setError('')
+    setNotice('')
+    if (newPassword !== confirmPassword) {
+      setError('Шинэ нууц үг таарахгүй байна')
+      return
+    }
+    setBusy(true)
+    try {
+      await adminFetch('/api/admin/password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordOpen(false)
+      setNotice('Нууц үг солигдлоо')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Нууц үг солигдсонгүй')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const addAdmin = async () => {
+    setError('')
+    setNotice('')
+    setBusy(true)
+    try {
+      await adminFetch('/api/admin/admins', {
+        method: 'POST',
+        body: JSON.stringify({ phone: adminPhone, password: adminPassword }),
+      })
+      setAdminPhone('')
+      setAdminPassword('')
+      setNotice('Админ нэмэгдлээ')
+      await load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Админ нэмж чадсангүй')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (loading || isGuest) {
     return (
       <Layout hideBottomNav>
@@ -250,15 +302,23 @@ export default function AdminPage() {
         <div className="max-w-[480px] mx-auto px-4 mt-24 text-center">
           <h1 className="text-[#F5F7FA] font-extrabold text-2xl mb-2">Админ эрхгүй</h1>
           <p className="text-[#9CA3AF] text-sm mb-6">
-            Энэ хэсэг зөвхөн админд нээлттэй. Утасны дугаараа <span className="text-[#A78BFA]">ADMIN_PHONES</span> орчинд нэмээд дахин нэвтэрнэ үү.
+            Энэ хэсэг зөвхөн админд нээлттэй. Админ нэвтрэх хуудсаар нууц үгээр нэвтэрнэ үү.
           </p>
-          <button
-            onClick={() => navigate('/')}
-            className="px-5 py-2.5 rounded-xl text-sm font-bold text-white"
-            style={{ background: '#8B5CF6' }}
-          >
-            Нүүр хуудас
-          </button>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => navigate('/admin/login?next=/admin')}
+              className="px-5 py-2.5 rounded-xl text-sm font-bold text-white"
+              style={{ background: '#8B5CF6' }}
+            >
+              Админ нэвтрэх
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-[#9CA3AF]"
+            >
+              Нүүр хуудас
+            </button>
+          </div>
         </div>
       </Layout>
     )
@@ -280,6 +340,16 @@ export default function AdminPage() {
               className="px-3 py-2 rounded-xl text-sm bg-[#151923] text-[#F5F7FA] outline-none border w-44 md:w-56"
               style={{ borderColor: 'rgba(255,255,255,0.08)' }}
             />
+            <button
+              onClick={() => {
+                setPasswordOpen((open) => !open)
+                setError('')
+              }}
+              className="px-3 py-2 rounded-xl text-sm font-semibold text-[#A78BFA] border hover:text-white"
+              style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+            >
+              Нууц үг солих
+            </button>
             <button
               onClick={load}
               className="px-3 py-2 rounded-xl text-sm font-semibold text-[#9CA3AF] border hover:text-white"
@@ -308,6 +378,50 @@ export default function AdminPage() {
         {error && (
           <div className="mb-4 px-4 py-3 rounded-xl text-sm text-[#F87171]" style={{ background: 'rgba(248,113,113,0.08)' }}>
             {error}
+          </div>
+        )}
+        {notice && (
+          <div className="mb-4 px-4 py-3 rounded-xl text-sm text-[#34D399]" style={{ background: 'rgba(52,211,153,0.08)' }}>
+            {notice}
+          </div>
+        )}
+        {passwordOpen && (
+          <div className="mb-6 rounded-2xl border p-4 grid gap-3 md:grid-cols-3" style={{ background: '#151923', borderColor: 'rgba(255,255,255,0.07)' }}>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Одоогийн нууц үг"
+              className="px-3 py-2 rounded-xl text-sm bg-[#0B0D12] text-[#F5F7FA] outline-none border"
+              style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+            />
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Шинэ нууц үг"
+              className="px-3 py-2 rounded-xl text-sm bg-[#0B0D12] text-[#F5F7FA] outline-none border"
+              style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Шинэ нууц үг давтах"
+              className="px-3 py-2 rounded-xl text-sm bg-[#0B0D12] text-[#F5F7FA] outline-none border"
+              style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+            />
+            <div className="md:col-span-3 flex justify-end gap-2">
+              <button onClick={() => setPasswordOpen(false)} className="px-4 py-2 rounded-xl text-sm text-[#9CA3AF]">Цуцлах</button>
+              <button
+                disabled={busy || currentPassword.length < 6 || newPassword.length < 6}
+                onClick={changePassword}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                style={{ background: '#8B5CF6' }}
+              >
+                Хадгалах
+              </button>
+            </div>
           </div>
         )}
 
@@ -448,6 +562,36 @@ export default function AdminPage() {
         )}
 
         {tab === 'users' && (
+          <div className="space-y-4">
+            <div className="rounded-2xl border p-4" style={{ background: '#151923', borderColor: 'rgba(255,255,255,0.07)' }}>
+              <p className="text-[#F5F7FA] text-sm font-semibold mb-3">Шинэ админ нэмэх</p>
+              <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                <input
+                  value={adminPhone}
+                  onChange={(e) => setAdminPhone(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                  placeholder="Утасны дугаар"
+                  inputMode="numeric"
+                  className="px-3 py-2 rounded-xl text-sm bg-[#0B0D12] text-[#F5F7FA] outline-none border"
+                  style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+                />
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="Нууц үг"
+                  className="px-3 py-2 rounded-xl text-sm bg-[#0B0D12] text-[#F5F7FA] outline-none border"
+                  style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+                />
+                <button
+                  disabled={busy || adminPhone.length !== 8 || adminPassword.length < 6}
+                  onClick={addAdmin}
+                  className="px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                  style={{ background: '#8B5CF6' }}
+                >
+                  Нэмэх
+                </button>
+              </div>
+            </div>
           <div className="rounded-2xl border overflow-hidden" style={{ background: '#151923', borderColor: 'rgba(255,255,255,0.07)' }}>
             {filteredUsers.map((item, i) => (
               <div key={item.uid} className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? 'border-t' : ''}`} style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
@@ -464,6 +608,7 @@ export default function AdminPage() {
             {filteredUsers.length === 0 && (
               <p className="px-4 py-8 text-center text-[#6B7280] text-sm">Хэрэглэгч байхгүй</p>
             )}
+          </div>
           </div>
         )}
 

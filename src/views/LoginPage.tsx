@@ -148,6 +148,12 @@ export default function LoginPage() {
           {error && <p className="text-[#F87171] text-sm mt-4">{error}</p>}
         </div>
         </AnimateIn>
+        <button
+          onClick={() => navigate('/admin/login')}
+          className="w-full mt-4 text-sm text-[#4B5563] hover:text-[#9CA3AF]"
+        >
+          Админ нэвтрэх
+        </button>
       </AnimateIn>
     </Layout>
   )

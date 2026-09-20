@@ -11,7 +11,7 @@ export function adminPhoneList(): string[] {
 
 export async function requireAdmin(
   req: NextRequest
-): Promise<{ uid: string } | { response: NextResponse }> {
+): Promise<{ uid: string; phone: string } | { response: NextResponse }> {
   const header = req.headers.get('authorization') || ''
   const token = header.startsWith('Bearer ') ? header.slice(7) : ''
   if (!token) {
@@ -22,7 +22,7 @@ export async function requireAdmin(
     const decoded = await adminAuth().verifyIdToken(token)
     const ref = adminDb().collection('users').doc(decoded.uid)
     const snap = await ref.get()
-    const phone = String(snap.data()?.phone || '')
+    const phone = String(snap.data()?.phone || decoded.phone || '')
     const listed = adminPhoneList().includes(phone)
     const isAdmin =
       decoded.admin === true || snap.data()?.role === 'admin' || listed
@@ -35,7 +35,7 @@ export async function requireAdmin(
       await ref.set({ role: 'admin', updatedAt: new Date().toISOString() }, { merge: true })
     }
 
-    return { uid: decoded.uid }
+    return { uid: decoded.uid, phone }
   } catch {
     return { response: NextResponse.json({ error: 'Нэвтэрнэ үү' }, { status: 401 }) }
   }

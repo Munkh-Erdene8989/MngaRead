@@ -192,7 +192,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [profile, planExpiresAt])
 
   const signInWithToken = useCallback(async (token: string) => {
-    await signInWithCustomToken(getClientAuth(), token)
+    const cred = await signInWithCustomToken(getClientAuth(), token)
+    await cred.user.getIdToken(true)
   }, [])
 
   const signOut = useCallback(async () => {
