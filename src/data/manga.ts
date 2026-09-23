@@ -47,7 +47,41 @@ export const makeChapters = (count: number, readUpTo = 0): Chapter[] =>
     read: i < readUpTo,
   }))
 
+const ETSEG_HUU_PAGES = Array.from({ length: 19 }, (_, i) =>
+  `/manga/etseg-huu/1/${String(i + 1).padStart(2, '0')}.jpg`,
+)
+
+export const CHAPTER_PAGES: Record<string, Record<number, string[]>> = {
+  'etseg-huu': { 1: ETSEG_HUU_PAGES },
+}
+
 export const MANGA_LIST: Manga[] = [
+  {
+    id: 'etseg-huu',
+    title: 'Эцэг нь ямар бол хүү тийм',
+    author: '—',
+    artist: '—',
+    genres: ['+188', 'Lifestyle'],
+    status: 'Үргэлжилж буй',
+    rating: 0,
+    ratingCount: 0,
+    chapterCount: 1,
+    synopsis: 'Амьдралын хэв маягийн түүх. Одоогоор 1-р бүлэг.',
+    coverColor: '#1a2430',
+    coverImage: '/manga/etseg-huu/cover.jpg',
+    year: 2026,
+    chapters: [
+      {
+        id: 1,
+        number: 1,
+        title: '1-р бүлэг',
+        pages: ETSEG_HUU_PAGES.length,
+        uploadedAt: 'Өнөөдөр',
+        read: false,
+      },
+    ],
+    tags: ['Шинэ', '+188'],
+  },
   {
     id: 'mongon-sum',
     title: 'Мөнгөн Сум',
@@ -225,7 +259,7 @@ export const MANGA_LIST: Manga[] = [
   },
 ]
 
-export const GENRES = ['Адал явдал', 'Тулаан', 'Романтик', 'Фантази', 'Инээдэм', 'Нууцлаг', 'Амьдрал', 'Шинжлэх ухаан']
+export const GENRES = ['Адал явдал', 'Тулаан', 'Романтик', 'Фантази', 'Инээдэм', 'Нууцлаг', 'Амьдрал', 'Шинжлэх ухаан', '+188', 'Lifestyle']
 
 // Real manga panel images for the reader
 export const READER_PAGES = [
@@ -240,6 +274,10 @@ export const READER_PAGES = [
   'https://images.unsplash.com/photo-1780871766050-d7db65bc618f?w=800&h=1200&fit=crop&auto=format',
   'https://images.unsplash.com/photo-1763315371250-4ecc8bcd0638?w=800&h=1200&fit=crop&auto=format',
 ]
+
+export function getReaderPages(mangaId: string, chapter: number): string[] {
+  return CHAPTER_PAGES[mangaId]?.[chapter] ?? READER_PAGES
+}
 
 export function getManga(id: string): Manga | undefined {
   return MANGA_LIST.find((m) => m.id === id)

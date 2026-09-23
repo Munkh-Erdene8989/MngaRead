@@ -13,7 +13,7 @@ import { useCatalog } from '@/contexts/CatalogContext'
 import { MOTION, REDUCE_MQ } from '@/lib/motion'
 import { useNavigate } from '@/lib/nav'
 
-const GENRE_CHIPS = ['Адал явдал','Тулаан','Романтик','Фантази','Инээдэм','Нууцлаг','Амьдрал','Шинжлэх ухаан']
+const GENRE_CHIPS = ['Адал явдал','Тулаан','Романтик','Фантази','Инээдэм','Нууцлаг','Амьдрал','Шинжлэх ухаан','+188','Lifestyle']
 
 function SectionHeader({ title, href, label = 'Бүгдийг харах' }: { title: string; href?: string; label?: string }) {
   const navigate = useNavigate()

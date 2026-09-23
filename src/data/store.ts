@@ -106,7 +106,8 @@ export const AVATAR_OPTIONS = [
 export const FREE_CHAPTER_THRESHOLD = 3 // last N chapters are premium
 
 export function isChapterFree(chapterNum: number, totalChapters: number): boolean {
-  return chapterNum <= totalChapters - FREE_CHAPTER_THRESHOLD
+  const freeUntil = Math.max(1, totalChapters - FREE_CHAPTER_THRESHOLD)
+  return chapterNum <= freeUntil
 }
 
 export function isChapterAccessible(

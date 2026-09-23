@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { animate, spring } from 'animejs'
-import { READER_PAGES } from '@/data/manga'
+import { getReaderPages } from '@/data/manga'
 import { isChapterAccessible } from '@/data/store'
 import { useNavigate } from '@/lib/nav'
 import { useAuth } from '@/contexts/AuthContext'
@@ -41,8 +41,14 @@ export default function ReaderPage({ id, chapter }: ReaderPageProps) {
   const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set())
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const pages = READER_PAGES
+  const pages = getReaderPages(id, chapterNum)
   const totalPages = pages.length
+
+  useEffect(() => {
+    setCurrentPage(0)
+    setLoadedPages(new Set())
+    setBrokenPages(new Set())
+  }, [id, chapterNum])
   const hasNext = chapterNum < (manga?.chapterCount ?? 1)
   const hasPrev = chapterNum > 1
 

@@ -152,7 +152,7 @@ export default function DetailPage({ id }: DetailPageProps) {
             <div className="flex items-center justify-center md:justify-start gap-0 mt-4 rounded-2xl overflow-hidden border w-fit mx-auto md:mx-0" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
               {[
                 { label: 'Бүлэг', value: manga.chapterCount },
-                { label: 'Уншигч', value: `${(manga.ratingCount / 1000).toFixed(0)}к` },
+                { label: 'Уншигч', value: manga.ratingCount >= 1000 ? `${Math.round(manga.ratingCount / 1000)}к` : String(manga.ratingCount) },
                 { label: 'Жил', value: manga.year },
               ].map((s, i) => (
                 <div key={s.label} className={`px-5 py-3 text-center ${i > 0 ? 'border-l' : ''}`} style={{ background: '#151923', borderColor: 'rgba(255,255,255,0.08)' }}>

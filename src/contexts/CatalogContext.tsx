@@ -36,7 +36,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       collection(getClientDb(), 'manga'),
       (snap) => {
         if (!snap.empty) {
-          setList(snap.docs.map((docSnap) => mangaFromRecord(docSnap.id, docSnap.data())))
+          const remote = snap.docs.map((docSnap) => mangaFromRecord(docSnap.id, docSnap.data()))
+          const remoteIds = new Set(remote.map((item) => item.id))
+          const localOnly = MANGA_LIST.filter((item) => !remoteIds.has(item.id))
+          setList([...localOnly, ...remote])
         }
         setLoading(false)
       },
